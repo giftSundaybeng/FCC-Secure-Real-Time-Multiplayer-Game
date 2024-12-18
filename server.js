@@ -7,6 +7,7 @@ const cors = require('cors');
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -15,6 +16,31 @@ app.use('/assets', express.static(process.cwd() + '/assets'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Secure headers
+app.use(helmet.noSniff());
+app.use(helmet.xssFilter());
+
+// Disable caching
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  res.set('Surrogate-Control', 'no-store');
+  next();
+});
+
+// Set fake "powered by" header
+app.use((req, res, next) => {
+  res.set('X-Powered-By', 'PHP 7.4.3');
+  next();
+});
+
+// Your game logic routes
+app.get('/', (req, res) => {
+  res.send('Secure Real Time Multiplayer Game');
+});
+
 
 //For FCC testing purposes and enables user to connect from outside the hosting platform
 app.use(cors({origin: '*'})); 
